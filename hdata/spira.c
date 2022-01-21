@@ -236,7 +236,7 @@ __section(".spirah.data") struct spirah spirah = {
 };
 
 /* The service processor SPIRA-S structure */
-struct spiras *spiras;
+struct spiras *volatile spiras;
 
 /* Overridden for testing. */
 #ifndef spira_check_ptr
