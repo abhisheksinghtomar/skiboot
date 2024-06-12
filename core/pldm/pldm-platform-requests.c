@@ -38,8 +38,10 @@ static void pdr_init_complete(bool success)
 	if (!success) {
 		pdr_ready = false;
 
-		if (pdrs_repo)
+		if (pdrs_repo){
 			pldm_pdr_destroy(pdrs_repo);
+			pdrs_repo = NULL;
+		}
 		return;
 	}
 
@@ -832,7 +834,7 @@ static int send_repository_changed_event(uint32_t num_changed_pdrs,
 		.event_class = PLDM_PDR_REPOSITORY_CHG_EVENT,
 	};
 
-	struct pldm_platform_event_message_resp response;
+	struct pldm_platform_event_message_resp response = {0};
 
 	prlog(PR_DEBUG, "%s - num_changed_pdrs: %d\n", __func__, num_changed_pdrs);
 
@@ -906,6 +908,7 @@ static int send_repository_changed_event(uint32_t num_changed_pdrs,
 	}
 	free(event_data);
 
+	printf("TEST ABHISHEK :%s sending EVENT Message\n",__func__);
 	/* Send and get the response message bytes */
 	rc = pldm_requester_queue_and_wait(tx, &response_msg, &response_len);
 	if (rc) {
@@ -993,6 +996,7 @@ static void get_pdr_req_complete(struct pldm_rx_data *rx,
 	struct pldm_pdrs *pdrs = (struct pldm_pdrs *)data;
 	uint32_t record_hndl = pdrs->record_hndl;
 	struct get_pdr_response response;
+	struct pldm_pdr_hdr *pdr_hdr;
 	size_t payload_len;
 	int rc, i;
 
@@ -1065,6 +1069,9 @@ static void get_pdr_req_complete(struct pldm_rx_data *rx,
 	if (response.transfer_flag != PLDM_START_AND_END)
 		prlog(PR_ERR, "Transfert GetPDRResp not complete, transfer_flag: %d\n",
 			      response.transfer_flag);
+
+	pdr_hdr = (struct pldm_pdr_hdr *)response.record_data;
+	record_hndl = pdr_hdr->record_handle;
 
 	prlog(PR_DEBUG, "%s - record_hndl: %d, next_record_hndl: %d, resp_cnt: %d\n",
 			__func__, record_hndl,
