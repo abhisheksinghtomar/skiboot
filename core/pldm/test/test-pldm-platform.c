@@ -4,6 +4,7 @@
 #include "test-pldm-common.c"
 
 #define STATESENSOR_RECORD_HANDLE 116
+#define STATESENSOR_RECORD_HANDLE_1 187
 
 #define EFFECTER1_RECORD_HANDLE 120
 #define EFFECTER2_RECORD_HANDLE 160
@@ -38,6 +39,27 @@ struct state_sensor_possible_states possible_states_sensor_0_test = {
 
 };
 
+
+struct pldm_state_sensor_pdr sensor_test_1 = {
+	.hdr = {
+		.record_handle = STATESENSOR_RECORD_HANDLE_1
+	},
+	.terminus_handle = 1,
+	.sensor_id = 3,
+	.entity_type = PLDM_ENTITY_SYSTEM_CHASSIS,
+	.entity_instance = 1,
+	.container_id = 1,
+	.sensor_init = 0,
+	.sensor_auxiliary_names_pdr = false,
+	.composite_sensor_count = 1
+};
+struct state_sensor_possible_states possible_states_sensor_1_test = {
+	.state_set_id = 17,
+	.possible_states_size = 1,
+	.states = {
+		{.byte = 1}
+	}
+};
 
 
 
@@ -198,8 +220,17 @@ int get_test_pdr_entry(uint32_t record_hndl, uint8_t **pdr,
 		 * if record_handle is equal to first record handle or 0
 		 * then encode next data transfer handle with 2nd record handle
 		 */
-		*next_record_hndl = effecter_test_1.hdr.record_handle;
+		*next_record_hndl = sensor_test_1.hdr.record_handle;
 
+	} else if (record_hndl == sensor_test_1.hdr.record_handle) {
+
+		rc = encode_test_state_sensor_pdr(
+				&sensor_test_1,
+				&possible_states_sensor_1_test,
+				pdr, pdr_len);
+		if (rc != PLDM_SUCCESS)
+			return rc;
+		*next_record_hndl = effecter_test_1.hdr.record_handle;
 
 	} else if (record_hndl == effecter_test_1.hdr.record_handle) {
 
@@ -447,7 +478,7 @@ int test_find_pdr_first_record(void)
 			free(pdr_data);
 		return OPAL_PARAMETER;
 	}
-	free(pdr_data);
+//	free(pdr_data);
 
 	return OPAL_SUCCESS;
 }
@@ -479,7 +510,7 @@ int test_find_pdr_existing_record(void)
 			free(pdr_data);
 		return OPAL_PARAMETER;
 	}
-	free(pdr_data);
+//	free(pdr_data);
 
 	return OPAL_SUCCESS;
 }
@@ -502,7 +533,19 @@ int test_find_pdr_non_existing_record(void)
 	return OPAL_SUCCESS;
 }
 
+int test_pldm_platform_initiate_shutdown(void)
+{
+	int rc;
 
+	rc = pldm_platform_initiate_shutdown();
+	if (rc != OPAL_PARAMETER) {
+		printf("PLDM_TEST: %s failed :: rc = %d exp %d\n",
+				__func__, rc, OPAL_PARAMETER);
+		return OPAL_PARAMETER;
+	}
+	return OPAL_SUCCESS;
+
+}
 
 struct test_case {
 	const char *name;
@@ -518,6 +561,7 @@ struct test_case test_cases[] = {
 	TEST_CASE(test_find_pdr_first_record),
 	TEST_CASE(test_find_pdr_existing_record),
 	TEST_CASE(test_find_pdr_non_existing_record),
+	TEST_CASE(test_pldm_platform_initiate_shutdown),
 	{NULL, NULL}
 };
 
