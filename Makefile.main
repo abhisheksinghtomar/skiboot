@@ -179,7 +179,8 @@ CFLAGS += $(call try-cflag,$(CC),-Wjump-misses-init) \
 	  $(call try-cflag,$(CC),-Wstack-usage=1024) \
 	  $(call try-cflag,$(CC),-Wno-error=array-bounds) \
 	  $(call try-cflag,$(CC),-Wno-error=stringop-overread) \
-	  $(call try-cflag,$(CC),-Wno-error=address-of-packed-member)
+	  $(call try-cflag,$(CC),-Wno-error=address-of-packed-member) \
+	  $(call try-cflag,$(CC),-Wno-error=-Wno-error=unterminated-string-initialization)
 
 CFLAGS += $(CWARNS) $(OPTS) $(DBG)
 
